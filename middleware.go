@@ -18,9 +18,10 @@ const (
 )
 
 var (
-	TraceIDKey   = "trace_id"
-	SpanIDKey    = "span_id"
-	RequestIDKey = "id"
+	TraceIDKey      = "trace_id"
+	SpanIDKey       = "span_id"
+	TraceSampledKey = "trace_sampled"
+	RequestIDKey    = "id"
 
 	RequestBodyMaxSize  = 64 * 1024 // 64KB
 	ResponseBodyMaxSize = 64 * 1024 // 64KB
@@ -294,10 +295,11 @@ func extractTraceSpanID(ctx context.Context, withTraceID bool, withSpanID bool) 
 	span := trace.SpanFromContext(ctx)
 	spanCtx := span.SpanContext()
 
-	attrs := []slog.Attr{}
-	
+	var attrs []slog.Attr
+
 	if withTraceID && spanCtx.HasTraceID() {
 		traceID := trace.SpanFromContext(ctx).SpanContext().TraceID().String()
+
 		attrs = append(attrs, slog.String(TraceIDKey, traceID))
 	}
 
@@ -305,6 +307,8 @@ func extractTraceSpanID(ctx context.Context, withTraceID bool, withSpanID bool) 
 		spanID := spanCtx.SpanID().String()
 		attrs = append(attrs, slog.String(SpanIDKey, spanID))
 	}
+
+	attrs = append(attrs, slog.Bool(TraceSampledKey, spanCtx.TraceFlags().IsSampled()))
 
 	return attrs
 }
