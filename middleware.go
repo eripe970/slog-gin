@@ -292,13 +292,10 @@ func extractTraceSpanID(ctx context.Context, withTraceID bool, withSpanID bool) 
 	}
 
 	span := trace.SpanFromContext(ctx)
-	if !span.IsRecording() {
-		return []slog.Attr{}
-	}
-
-	attrs := []slog.Attr{}
 	spanCtx := span.SpanContext()
 
+	attrs := []slog.Attr{}
+	
 	if withTraceID && spanCtx.HasTraceID() {
 		traceID := trace.SpanFromContext(ctx).SpanContext().TraceID().String()
 		attrs = append(attrs, slog.String(TraceIDKey, traceID))
